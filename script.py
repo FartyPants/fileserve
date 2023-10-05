@@ -18,6 +18,8 @@ def format_date(time_value):
 
 from modules import chat
 
+httpd = None
+
 right_symbol = '\U000027A1'
 left_symbol = '\U00002B05'
 refresh_symbol = '\U0001f504'  # 🔄
@@ -38,7 +40,8 @@ params = {
 
 class FileLister(SimpleHTTPRequestHandler):
     directory = "."  # Default root directory
-    def send_file(self, path, as_attachment=False, download_name=None):
+
+    def send_fileXX(self, path, as_attachment=False, download_name=None):
         try:
             if not os.path.exists(path) or not os.path.isfile(path):
                 self.send_response(404)
@@ -74,6 +77,8 @@ class FileLister(SimpleHTTPRequestHandler):
             self.send_response(500)
             self.end_headers()
             self.wfile.write(f"Error: {str(e)}".encode("utf-8"))
+
+    # this is not exactly working 100% yet        
     def list_files(self, directory):
         try:
             files = os.listdir(directory)
@@ -139,19 +144,21 @@ def start_server(port=8080, directory="."):
 
 
     print(f"File Server is running on http://{ip_address}:{port}")
-
-
-    httpd.serve_forever()
-
     yield f"File Server is running on http://{ip_address}:{port}"
 
+    httpd.serve_forever()
+    print("Server stopped.")
+    yield f"Server stopped."
+   
+
 def stop_server():
-    if hasattr(globals(), 'httpd'):
+    global httpd
+    if httpd:
         print("Stopping the server...")
         yield f"Stopping...."
         httpd.shutdown()
-        print("Server stopped.")
-        yield f"Server stopped."
+        yield f"Shutdown complete...."
+        httpd = None
     else:
         print("Server is not running.")
         yield f"Server is not running."
